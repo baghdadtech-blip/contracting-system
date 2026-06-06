@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light" data-numlocale="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,6 +31,12 @@
   --sidebar-width: 260px;
 }
 
+[data-theme="dark"] {
+  --bg:#0f1923;--card-bg:#1a2535;--sidebar-bg:#0d1520;
+  --text-dark:#e8edf2;--text-muted:#8899aa;--border:#2a3a4a;
+  --shadow:0 2px 12px rgba(0,0,0,0.3);--shadow-lg:0 8px 30px rgba(0,0,0,0.4);
+  --topbar-bg:#1a2535;--input-bg:#1a2535;--input-border:#2a3a4a;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -38,6 +44,7 @@ body {
   background: var(--bg);
   color: var(--text-dark);
   min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
 }
 
 /* ===== LOGIN ===== */
@@ -224,7 +231,7 @@ body {
 }
 
 .topbar {
-  background: #fff;
+  background: var(--card-bg);
   padding: 0 24px;
   height: 64px;
   display: flex;
@@ -234,6 +241,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: background 0.3s;
 }
 .topbar-title { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
@@ -267,6 +275,7 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   background: var(--card-bg);
+  transition: background 0.3s;
 }
 .card-header {
   background: transparent;
@@ -385,10 +394,14 @@ body {
   font-family: 'Cairo', sans-serif;
   font-size: 0.9rem;
   transition: all 0.2s;
+  background: var(--card-bg);
+  color: var(--text-dark);
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+  background: var(--card-bg);
+  color: var(--text-dark);
 }
 
 /* ===== BUTTONS ===== */
@@ -459,10 +472,18 @@ body {
   .sidebar-overlay.open { display: block; }
   .main-content { margin-right: 0; }
   .menu-toggle { display: flex; }
-  .page-content { padding: 16px; }
-  .stat-card .stat-value { font-size: 1.3rem; }
-  .nav-item-link { padding: 16px 24px; font-size: 1.1rem; }
+  .page-content { padding: 12px; }
+  .stat-card .stat-value { font-size: 1.2rem; }
+  .nav-item-link { padding: 16px 24px; font-size: 1.05rem; }
   .nav-section-title { padding: 16px 24px 6px; font-size: 0.82rem; }
+  .modal-dialog { margin: 8px; max-width: calc(100vw - 16px); }
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 14px 16px; }
+  .modal-footer { padding: 12px 16px; }
+  .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .page-header { margin-bottom: 16px; }
+  .page-header h4 { font-size: 1rem; }
+  .row.g-3 > [class*="col-md"] { width: 100%; }
 }
 
 @media (max-width: 576px) {
@@ -650,6 +671,12 @@ body {
       </div>
       <div class="topbar-actions">
         <span id="topbarDate" style="font-size:0.82rem;color:var(--text-muted);"></span>
+        <button class="btn-icon" id="numLocaleBtn" onclick="toggleNumLocale()" title="تبديل الأرقام">
+          <span style="font-size:0.8rem;font-weight:800">١٢٣</span>
+        </button>
+        <button class="btn-icon" id="themeBtn" onclick="toggleTheme()" title="الوضع الليلي">
+          <i class="fas fa-moon"></i>
+        </button>
         <button class="btn-icon" onclick="exportBackup()" title="نسخة احتياطية">
           <i class="fas fa-download"></i>
         </button>
@@ -1044,7 +1071,7 @@ body {
               <thead>
                 <tr>
                   <th>#</th><th>اسم المقاول</th><th>الهاتف</th><th>نوع التعاقد</th>
-                  <th>إجمالي العقد</th><th>المصروف</th><th>المتبقي</th><th>إجراءات</th>
+                  <th>سعر البيت</th><th>البيوت المستلمة</th><th>إجمالي المستحق</th><th>المدفوع</th><th>المتبقي</th><th>نسبة الإنجاز</th><th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="contractorsTable"></tbody>
@@ -1457,29 +1484,34 @@ body {
           <div class="col-md-6">
             <label class="form-label">نوع التعاقد *</label>
             <select class="form-select" id="contractorType" onchange="toggleContractorType()">
-              <option value="meter">على المتر</option>
-              <option value="lump">مبلغ مقطوعية (قطعي)</option>
+              <option value="meter">على المتر (سعر المتر × 362م² = سعر البيت)</option>
+              <option value="lump">مقطوعية (سعر الألف بلوكة × 4.5 = سعر البيت)</option>
             </select>
           </div>
           <div class="col-md-6" id="contractorMeterPriceDiv">
-            <label class="form-label">سعر المتر</label>
-            <input type="number" class="form-control" id="contractorMeterPrice" min="0">
+            <label class="form-label">سعر المتر الواحد</label>
+            <input type="number" class="form-control" id="contractorMeterPrice" min="0" oninput="calcContractor()" placeholder="0">
           </div>
-          <div class="col-md-6" id="contractorMetersDiv">
-            <label class="form-label">عدد الأمتار المنفذة</label>
-            <input type="number" class="form-control" id="contractorMeters" min="0">
-          </div>
-          <div class="col-md-6" id="contractorLumpDiv" style="display:none;">
-            <label class="form-label">قيمة الاتفاق الكلية</label>
-            <input type="number" class="form-control" id="contractorLumpSum" min="0">
+          <div class="col-md-6" id="contractorLumpDiv" style="display:none">
+            <label class="form-label">سعر الألف بلوكة</label>
+            <input type="number" class="form-control" id="contractorLumpPrice" min="0" oninput="calcContractor()" placeholder="0">
           </div>
           <div class="col-md-6">
             <label class="form-label">عدد البيوت المستلمة</label>
-            <input type="number" class="form-control" id="contractorHouses" min="0">
+            <input type="number" class="form-control" id="contractorHouses" min="0" oninput="calcContractor()" placeholder="0">
           </div>
           <div class="col-md-6">
-            <label class="form-label">المبالغ المصروفة</label>
-            <input type="number" class="form-control" id="contractorPaid" min="0">
+            <label class="form-label">المبالغ المدفوعة للمقاول</label>
+            <input type="number" class="form-control" id="contractorPaid" min="0" oninput="calcContractor()" placeholder="0">
+          </div>
+          <div class="col-12">
+            <div style="background:rgba(26,58,92,0.05);border:1.5px solid rgba(26,58,92,0.15);border-radius:12px;padding:14px 16px;margin-top:4px">
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="font-size:0.82rem;color:var(--text-muted);font-weight:600">سعر البيت الواحد</span><span style="font-size:0.9rem;font-weight:800;color:var(--primary)" id="calcHousePrice">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="font-size:0.82rem;color:var(--text-muted);font-weight:600">إجمالي المستحق</span><span style="font-size:0.9rem;font-weight:800;color:#1e8449" id="calcTotal">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)"><span style="font-size:0.82rem;color:var(--text-muted);font-weight:600">إجمالي المدفوع</span><span style="font-size:0.9rem;font-weight:800;color:#c0392b" id="calcPaid">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0 4px"><span style="font-size:0.88rem;font-weight:800;color:var(--primary)">المتبقي للمقاول</span><span style="font-size:1rem;font-weight:800" id="calcRemaining">0</span></div>
+              <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:0.82rem;color:var(--text-muted);font-weight:600">نسبة الإنجاز</span><span style="font-size:0.9rem;font-weight:800;color:var(--primary)" id="calcProgress">0%</span></div>
+            </div>
           </div>
           <div class="col-12">
             <label class="form-label">ملاحظات</label>
@@ -1636,6 +1668,35 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// ===== THEME =====
+function toggleTheme(){
+  const html=document.documentElement;
+  const dark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme',dark?'light':'dark');
+  localStorage.setItem('theme',dark?'light':'dark');
+  document.getElementById('themeBtn').innerHTML=dark?'<i class="fas fa-moon"></i>':'<i class="fas fa-sun"></i>';
+}
+function loadTheme(){
+  const t=localStorage.getItem('theme')||'light';
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeBtn').innerHTML=t==='dark'?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+}
+
+// ===== NUM LOCALE =====
+function toggleNumLocale(){
+  const cur=document.documentElement.getAttribute('data-numlocale')||'ar';
+  const next=cur==='ar'?'en':'ar';
+  document.documentElement.setAttribute('data-numlocale',next);
+  localStorage.setItem('numlocale',next);
+  document.getElementById('numLocaleBtn').innerHTML=next==='ar'?'<span style="font-size:0.8rem;font-weight:800">١٢٣</span>':'<span style="font-size:0.8rem;font-weight:800">123</span>';
+  renderDashboard();
+}
+function loadNumLocale(){
+  const n=localStorage.getItem('numlocale')||'ar';
+  document.documentElement.setAttribute('data-numlocale',n);
+  document.getElementById('numLocaleBtn').innerHTML=n==='ar'?'<span style="font-size:0.8rem;font-weight:800">١٢٣</span>':'<span style="font-size:0.8rem;font-weight:800">123</span>';
+}
+
 // ===== DATA STORE =====
 const DB = {
   get(key, def=[]) {
@@ -1752,10 +1813,14 @@ function uid() { return Date.now() + Math.random().toString(36).substr(2,5); }
 function fmt(n) {
   const s = DB.getObj('settings');
   const c = s.currency || 'IQD';
-  return Number(n||0).toLocaleString('ar-IQ') + ' ' + c;
+  const locale = (document.documentElement.getAttribute('data-numlocale')||'ar')==='ar'?'ar-IQ':'en-US';
+  return Number(n||0).toLocaleString(locale) + ' ' + c;
 }
 
-function fmtShort(n) { return Number(n||0).toLocaleString('ar-IQ'); }
+function fmtShort(n) {
+  const locale = (document.documentElement.getAttribute('data-numlocale')||'ar')==='ar'?'ar-IQ':'en-US';
+  return Number(n||0).toLocaleString(locale);
+}
 
 function today() { return new Date().toISOString().split('T')[0]; }
 
@@ -2390,11 +2455,40 @@ function renderCashbox() {
 }
 
 // ===== CONTRACTORS =====
+const HOUSE_AREA = 362;
+const BLOCKS_PER_HOUSE = 4.5;
+
+function calcContractorValues(){
+  const type = document.getElementById('contractorType').value;
+  const houses = Number(document.getElementById('contractorHouses').value||0);
+  const paid = Number(document.getElementById('contractorPaid').value||0);
+  let housePrice = 0;
+  if(type==='meter'){
+    housePrice = Number(document.getElementById('contractorMeterPrice').value||0) * HOUSE_AREA;
+  } else {
+    housePrice = Number(document.getElementById('contractorLumpPrice').value||0) * BLOCKS_PER_HOUSE;
+  }
+  const total = housePrice * houses;
+  const remaining = total - paid;
+  const pct = total > 0 ? Math.min(100, Math.round(paid/total*100)) : 0;
+  return { housePrice, total, paid, remaining, pct };
+}
+
+function calcContractor(){
+  const v = calcContractorValues();
+  document.getElementById('calcHousePrice').textContent = fmt(v.housePrice);
+  document.getElementById('calcTotal').textContent = fmt(v.total);
+  document.getElementById('calcPaid').textContent = fmt(v.paid);
+  document.getElementById('calcRemaining').textContent = fmt(v.remaining);
+  document.getElementById('calcRemaining').style.color = v.remaining >= 0 ? '#1e8449' : '#c0392b';
+  document.getElementById('calcProgress').textContent = fmtShort(v.pct) + '%';
+}
+
 function toggleContractorType() {
   const t = document.getElementById('contractorType').value;
-  document.getElementById('contractorMeterPriceDiv').style.display = t==='meter'?'':'none';
-  document.getElementById('contractorMetersDiv').style.display = t==='meter'?'':'none';
-  document.getElementById('contractorLumpDiv').style.display = t==='lump'?'':'none';
+  document.getElementById('contractorMeterPriceDiv').style.display = t==='meter' ? '' : 'none';
+  document.getElementById('contractorLumpDiv').style.display = t==='lump' ? '' : 'none';
+  calcContractor();
 }
 
 function openContractorModal(id=null) {
@@ -2404,7 +2498,7 @@ function openContractorModal(id=null) {
   });
   document.getElementById('contractorType').value = 'meter';
   document.getElementById('contractorModalTitle').textContent = id ? 'تعديل مقاول' : 'مقاول جديد';
-  toggleContractorType();
+  toggleContractorType(); calcContractor();
   if (id) {
     const c = DB.get('contractors').find(x => x.id === id);
     if (c) {
@@ -2413,12 +2507,11 @@ function openContractorModal(id=null) {
       document.getElementById('contractorPhone').value = c.phone||'';
       document.getElementById('contractorType').value = c.type||'meter';
       document.getElementById('contractorMeterPrice').value = c.meterPrice||'';
-      document.getElementById('contractorMeters').value = c.meters||'';
-      document.getElementById('contractorLumpSum').value = c.lumpSum||'';
+      document.getElementById('contractorLumpPrice').value = c.lumpPrice||'';
       document.getElementById('contractorHouses').value = c.houses||'';
       document.getElementById('contractorPaid').value = c.paid||'';
       document.getElementById('contractorNotes').value = c.notes||'';
-      toggleContractorType();
+      toggleContractorType(); calcContractor();
     }
   }
   new bootstrap.Modal(document.getElementById('contractorModal')).show();
@@ -2430,13 +2523,14 @@ function saveContractor() {
   const contractors = DB.get('contractors');
   const id = document.getElementById('contractorId').value;
   const type = document.getElementById('contractorType').value;
+  const v = calcContractorValues();
   const data = {
     name, phone: document.getElementById('contractorPhone').value, type,
     meterPrice: Number(document.getElementById('contractorMeterPrice').value||0),
-    meters: Number(document.getElementById('contractorMeters').value||0),
-    lumpSum: Number(document.getElementById('contractorLumpSum').value||0),
+    lumpPrice: Number(document.getElementById('contractorLumpPrice').value||0),
     houses: Number(document.getElementById('contractorHouses').value||0),
     paid: Number(document.getElementById('contractorPaid').value||0),
+    housePrice: v.housePrice, total: v.total, remaining: v.remaining, pct: v.pct,
     notes: document.getElementById('contractorNotes').value
   };
   if (id) {
@@ -2474,16 +2568,26 @@ function renderContractors() {
   }
   document.getElementById('contractorsEmpty')?.classList.add('d-none');
   tbody.innerHTML = contractors.map((c,i) => {
-    const total = c.type==='meter' ? c.meterPrice*c.meters : c.lumpSum;
-    const remaining = total - c.paid;
+    const tLabel = c.type==='meter' ? `متر (${fmtShort(HOUSE_AREA)}م²)` : 'مقطوعية';
+    const pct = c.pct||0;
     return `<tr>
-      <td>${i+1}</td>
+      <td>${fmtShort(i+1)}</td>
       <td><strong>${c.name}</strong></td>
       <td>${c.phone||'-'}</td>
-      <td>${c.type==='meter'?'على المتر':'مقطوعية'}</td>
-      <td>${fmt(total)}</td>
-      <td class="text-danger">${fmt(c.paid)}</td>
-      <td class="${remaining>=0?'text-warning':'text-danger'}">${fmt(remaining)}</td>
+      <td>${tLabel}</td>
+      <td>${fmt(c.housePrice||0)}</td>
+      <td>${fmtShort(c.houses||0)}</td>
+      <td class="text-success">${fmt(c.total||0)}</td>
+      <td class="text-danger">${fmt(c.paid||0)}</td>
+      <td class="${(c.remaining||0)>=0?'text-warning':'text-danger'}">${fmt(c.remaining||0)}</td>
+      <td>
+        <div class="d-flex align-items-center gap-1">
+          <div class="progress" style="width:50px;min-width:50px;height:7px;background:rgba(0,0,0,0.1);border-radius:4px">
+            <div class="progress-bar ${pct>=100?'bg-success':'bg-primary'}" style="width:${pct}%;border-radius:4px"></div>
+          </div>
+          <span style="font-size:0.78rem;white-space:nowrap">${fmtShort(pct)}%</span>
+        </div>
+      </td>
       <td>
         <button class="btn btn-warning btn-sm me-1" onclick="openContractorModal('${c.id}')"><i class="fas fa-edit"></i></button>
         <button class="btn btn-danger btn-sm" onclick="deleteContractor('${c.id}')"><i class="fas fa-trash"></i></button>
@@ -2799,33 +2903,47 @@ function printPage(elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
   const s = DB.getObj('settings');
-  const win = window.open('', '_blank');
+  const win = window.open('', '_blank', 'width=900,height=700');
   win.document.write(`<!DOCTYPE html><html dir="rtl"><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-      body{font-family:Cairo,sans-serif;padding:20px;color:#333}
+      *{box-sizing:border-box}
+      body{font-family:Cairo,sans-serif;padding:24px;color:#1a1a2e;background:#fff}
+      h5,h6{color:#1a3a5c}
       table{width:100%;border-collapse:collapse;margin-bottom:16px}
-      th{background:#1a3a5c;color:#fff;padding:8px 10px}
-      td{padding:7px 10px;border-bottom:1px solid #eee}
-      .stat-card{padding:12px;border-radius:8px;margin:4px;color:#fff;display:inline-block;min-width:140px}
+      th{background:#1a3a5c;color:#fff;padding:9px 12px;font-size:0.82rem;font-weight:700}
+      td{padding:8px 12px;border-bottom:1px solid #eee;font-size:0.85rem}
+      .stat-card{padding:12px;border-radius:10px;color:#fff;display:inline-block;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       .green{background:#27ae60}.red{background:#e74c3c}.blue{background:#1a3a5c}
-      .summary-row{background:#f8f9fa;padding:12px;border-radius:8px;margin:4px}
-      .badge-status{padding:3px 10px;border-radius:12px;font-size:0.8rem}
-      .badge-active{background:#d5f5e3;color:#1e8449}.badge-unpaid{background:#fadbd8;color:#c0392b}
-      .badge-paid{background:#d5f5e3;color:#1e8449}.badge-stopped{background:#fdebd0;color:#d35400}
-      @media print{body{padding:10px}}
+      .summary-row{background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:8px;border:1px solid #eee}
+      .badge-status{padding:3px 10px;border-radius:12px;font-size:0.76rem;font-weight:700}
+      .badge-active,.badge-paid{background:#d5f5e3;color:#1e8449}
+      .badge-stopped{background:#fdebd0;color:#d35400}
+      .badge-unpaid{background:#fadbd8;color:#c0392b}
+      .text-success{color:#1e8449!important}.text-danger{color:#c0392b!important}
+      .text-primary{color:#1a3a5c!important}.text-warning{color:#d68910!important}
+      .text-muted{color:#888!important}
+      .card{border:1px solid #eee;border-radius:10px;overflow:hidden;margin-bottom:16px}
+      .card-header{background:#f8f9fa;padding:12px 16px;border-bottom:1px solid #eee;font-weight:700;color:#1a3a5c}
+      .card-body{padding:16px}
+      .progress{height:6px;background:#eee;border-radius:4px;overflow:hidden}
+      .progress-bar{background:#1a3a5c;height:100%}
+      @media print{body{padding:10px}button{display:none!important}}
     </style>
     <title>${s.companyName||'تقرير'}</title>
   </head><body>
     <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #1a3a5c;padding-bottom:12px">
       <h2 style="color:#1a3a5c;margin:0">${s.companyName||'شركة المقاولات'}</h2>
-      <div style="font-size:0.85rem;color:#666">${new Date().toLocaleDateString('ar-IQ',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+      ${s.companyAddress ? `<p style="color:#888;font-size:0.85rem;margin:4px 0">${s.companyAddress}</p>` : ''}
+      <div style="font-size:0.82rem;color:#888">${new Date().toLocaleDateString('ar-IQ',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
     </div>
     ${el.innerHTML}
+    <div style="text-align:center;margin-top:20px">
+      <button onclick="window.print()" style="padding:10px 32px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:1rem;cursor:pointer;font-weight:700">طباعة</button>
+    </div>
   </body></html>`);
   win.document.close();
-  setTimeout(() => win.print(), 500);
 }
 
 // ===== BACKUP =====
@@ -2862,6 +2980,8 @@ function importBackup(event) {
 
 // ===== INIT =====
 initData();
+loadTheme();
+loadNumLocale();
 updateDate();
 setInterval(updateDate, 60000);
 </script>
