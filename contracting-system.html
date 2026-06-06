@@ -162,36 +162,36 @@ body {
 
 .sidebar-nav { padding: 16px 0; flex: 1; }
 .nav-section-title {
-  padding: 8px 20px 4px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.35);
+  padding: 12px 20px 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 .nav-item-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
-  color: var(--sidebar-text);
+  gap: 14px;
+  padding: 13px 20px;
+  color: #ffffff;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
   transition: all 0.2s;
   cursor: pointer;
   border-right: 3px solid transparent;
 }
 .nav-item-link:hover {
-  background: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.12);
   color: #fff;
 }
 .nav-item-link.active {
-  background: rgba(240,165,0,0.15);
+  background: rgba(240,165,0,0.2);
   color: var(--accent);
   border-right-color: var(--accent);
 }
-.nav-item-link i { width: 20px; text-align: center; font-size: 0.95rem; }
+.nav-item-link i { width: 22px; text-align: center; font-size: 1.05rem; opacity: 0.9; }
 
 .sidebar-footer {
   padding: 16px 20px;
@@ -295,6 +295,12 @@ body {
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover, .stat-card:active {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
 }
 .stat-card::after {
   content: '';
@@ -305,22 +311,34 @@ body {
   bottom: -30px; left: -20px;
 }
 .stat-card .stat-icon {
-  width: 48px; height: 48px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.2);
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   margin-bottom: 16px;
 }
 .stat-card .stat-value {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 800;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
-.stat-card .stat-label { font-size: 0.85rem; opacity: 0.85; font-weight: 500; }
+.stat-card .stat-label {
+  font-size: 0.92rem;
+  opacity: 1;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+}
+.stat-card .stat-arrow {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
 .stat-card.blue { background: linear-gradient(135deg, #1a3a5c, #234f7d); }
 .stat-card.gold { background: linear-gradient(135deg, #d68910, #f0a500); }
 .stat-card.green { background: linear-gradient(135deg, #1a7a44, #27ae60); }
@@ -432,13 +450,19 @@ body {
 }
 
 @media (max-width: 991px) {
-  .sidebar { transform: translateX(100%); }
+  .sidebar {
+    transform: translateX(100%);
+    width: 100%;
+    max-width: 100%;
+  }
   .sidebar.open { transform: translateX(0); }
   .sidebar-overlay.open { display: block; }
   .main-content { margin-right: 0; }
   .menu-toggle { display: flex; }
   .page-content { padding: 16px; }
   .stat-card .stat-value { font-size: 1.3rem; }
+  .nav-item-link { padding: 16px 24px; font-size: 1.1rem; }
+  .nav-section-title { padding: 16px 24px 6px; font-size: 0.82rem; }
 }
 
 @media (max-width: 576px) {
@@ -648,56 +672,64 @@ body {
 
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
-            <div class="stat-card blue">
+            <div class="stat-card blue" onclick="showPage('projects')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-project-diagram"></i></div>
               <div class="stat-value" id="statActiveProjects">0</div>
               <div class="stat-label">مشاريع فعالة</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card gold">
+            <div class="stat-card gold" onclick="showPage('projects')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
               <div class="stat-value" id="statTotalContracts">0</div>
               <div class="stat-label">إجمالي العقود</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card green">
+            <div class="stat-card green" onclick="showPage('payments')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
               <div class="stat-value" id="statTotalReceived">0</div>
               <div class="stat-label">إجمالي المستلم</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card red">
+            <div class="stat-card red" onclick="showPage('disbursements')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
               <div class="stat-value" id="statTotalExpenses">0</div>
               <div class="stat-label">إجمالي المصروفات</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card teal">
+            <div class="stat-card teal" onclick="showPage('cashbox')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-cash-register"></i></div>
               <div class="stat-value" id="statCashBalance">0</div>
               <div class="stat-label">رصيد الصندوق</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card purple">
+            <div class="stat-card purple" onclick="showPage('reports')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
               <div class="stat-value" id="statNetProfit">0</div>
               <div class="stat-label">صافي الأرباح</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card navy">
+            <div class="stat-card navy" onclick="showPage('contractors')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
               <div class="stat-value" id="statContractors">0</div>
               <div class="stat-label">المقاولون</div>
             </div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="stat-card orange">
+            <div class="stat-card orange" onclick="showPage('employees')">
+              <div class="stat-arrow"><i class="fas fa-arrow-left"></i></div>
               <div class="stat-icon"><i class="fas fa-users"></i></div>
               <div class="stat-value" id="statEmployees">0</div>
               <div class="stat-label">الموظفون</div>
