@@ -337,28 +337,15 @@ function loadDB() {
 }
 function saveDB() { localStorage.setItem('contracting_db', JSON.stringify(DB)); }
 function seedData() {
-  DB.complexes = [
-    { id:1, name:'مجمع النخيل', company:'شركة الإنشاء الحديث', contract_no:'C-2024-001', contract_date:'2024-01-15', units:120, unit_price:8500000, contract_value:1020000000, start_date:'2024-02-01', expected_end:'2025-06-30', status:'جاري', created_at: now() },
-    { id:2, name:'مجمع الرياض', company:'شركة البناء الذهبي', contract_no:'C-2024-002', contract_date:'2024-03-10', units:80, unit_price:9200000, contract_value:736000000, start_date:'2024-04-01', expected_end:'2025-10-31', status:'جاري', created_at: now() },
-  ];
-  DB.contractors = [
-    { id:1, name:'أبو محمد البناء', phone:'07701234567', address:'بغداد - الكرادة', type:'meter', price_per_meter:45000, agreed_qty:5000, done_qty:3200, created_at: now() },
-    { id:2, name:'مقاولات العراق', phone:'07809876543', address:'بغداد - المنصور', type:'fixed', houses:40, house_price:3500000, created_at: now() },
-  ];
-  DB.employees = [
-    { id:1, name:'أحمد كريم محمد', phone:'07751112233', address:'بغداد', job:'مهندس موقع', location:'مجمع النخيل', start_date:'2024-02-01', salary:750000, status:'فعال', created_at: now() },
-    { id:2, name:'سعد علي حسين', phone:'07754443322', address:'بغداد - الكرخ', job:'محاسب', location:'المكتب الرئيسي', start_date:'2024-01-01', salary:600000, status:'فعال', created_at: now() },
-  ];
-  DB.receipts = [
-    { id:1, no:'QBD-0001', date:'2024-05-01', complex_id:1, from:'شركة الإنشاء الحديث', amount:150000000, method:'حوالة', notes:'دفعة أولى', created_at: now() },
-    { id:2, no:'QBD-0002', date:'2024-06-15', complex_id:2, from:'شركة البناء الذهبي', amount:80000000, method:'شيك', notes:'دفعة أولى', created_at: now() },
-  ];
-  DB.payments = [
-    { id:1, no:'SRF-0001', date:'2024-05-10', beneficiary:'أبو محمد البناء', type:'مقاول', complex_id:1, amount:50000000, method:'نقدي', notes:'دفعة أعمال', created_at: now() },
-    { id:2, no:'SRF-0002', date:'2024-05-25', beneficiary:'أحمد كريم محمد', type:'موظف', complex_id:1, amount:750000, method:'نقدي', notes:'راتب مايو', created_at: now() },
-  ];
-  DB.receipt_seq = 3;
-  DB.payment_seq = 3;
+  DB.complexes = [];
+  DB.contractors = [];
+  DB.employees = [];
+  DB.attendance = [];
+  DB.salaries = [];
+  DB.receipts = [];
+  DB.payments = [];
+  DB.receipt_seq = 1;
+  DB.payment_seq = 1;
 }
 function now() { return new Date().toISOString(); }
 function nextReceiptNo() { const n = DB.receipt_seq++; saveDB(); return `QBD-${String(n).padStart(4,'0')}`; }
